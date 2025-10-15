@@ -60,7 +60,31 @@ Create a style guide for the AI Study Buddy app. Specify a color palette, font c
   - Use simple, universally recognizable icons (upload, settings, flashcard, quiz).  
   - Sourced from open-access icon libraries.
 - **Accessibility:**  
+
   - Sufficient color contrast.  
   - Keyboard navigable.  
   - Alt text on all images and icons.  
   - Responsive layout for mobile and desktop.
+
+---
+
+### Prompt 3 – Frontend Prototype UI (Phase 2)
+**Prompt:**  
+Design the first HTML/CSS/JS prototype for the AI Study Buddy frontend. Use the existing style guide (colors, fonts, layout) to build a simple upload interface that connects to the FastAPI backend. Include placeholders for results and settings screens to be implemented later.
+
+**AI Response:**  
+- **index.html:**  
+  - Contains a header with the app title “AI Study Buddy”.  
+  - Central upload card with drag-and-drop or “Choose File” button.  
+  - A “Generate Study Aids” button triggering API call to `/upload`.  
+  - Placeholder sections for “Results” and “Settings”.
+- **style.css:**  
+  - Uses the defined palette: Deep blue (#003366), Light blue (#E6F0FA), and Accent orange (#FF8200).  
+  - Applies modern, accessible design: large buttons, high contrast, and responsive grid.  
+  - Fonts: Inter, sans-serif, minimum 16px.
+- **script.js:**  
+  - Handles file upload and POSTs data to the FastAPI `/upload` endpoint.  
+  - Displays success or error messages dynamically.  
+  - Logs response to console for now (future integration: display flashcards and summaries).
+- **Next Step:**  
+  - Expand the UI with React components for a more dynamic experience once prototype testing is completed.

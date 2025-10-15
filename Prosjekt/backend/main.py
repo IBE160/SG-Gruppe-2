@@ -4,6 +4,7 @@ import fitz  # PyMuPDF
 import os
 from dotenv import load_dotenv
 from google import genai
+import markdown
 
 # Load environment variables
 load_dotenv()
@@ -69,7 +70,9 @@ async def upload_file(file: UploadFile = File(...)):
         )
 
         summary = getattr(response, "text", None) or "No summary generated."
-        return {"summary": summary}
+        # Convert Markdown to HTML for proper rendering in frontend
+        html_output = markdown.markdown(summary)
+        return {"summary": html_output}
 
     except Exception as e:
         print(f"Error in /upload/: {e}")
@@ -112,3 +115,4 @@ async def generate_flashcards(file: UploadFile = File(...)):
     except Exception as e:
         print(f"Error in /generate/flashcards/: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
