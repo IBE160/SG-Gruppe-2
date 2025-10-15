@@ -39,4 +39,6 @@
 **Outcome:**
 ✅ Summaries now render cleanly with headings, bullet points, and paragraphs.
 ✅ Browser output is fully formatted and accessible.
-✅ User experience significantly improved through readable, structured AI responses.
+✅ User experience significantly improved through readable, structured AI responses.git add .
+git commit -m "Added frontend prototype (HTML/CSS/JS) and integrated Markdown-rendered Gemini responses in backend"
+git push origin main
