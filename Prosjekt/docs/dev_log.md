@@ -42,3 +42,32 @@
 ✅ User experience significantly improved through readable, structured AI responses.git add .
 git commit -m "Added frontend prototype (HTML/CSS/JS) and integrated Markdown-rendered Gemini responses in backend"
 git push origin main
+
+
+## 2025-10-19 — Designer Phase 2 Updates
+- Extended design to include Results and Settings screens.
+- Updated visual layout and accessibility guidelines.
+- Prepared style_guide.md with color, typography, and layout specifications.
+- Verified consistent design across upload → results → settings flow.
+
+## 2025-10-19 — Phase 2: Dynamic Frontend-Backend Integration
+
+### Summary
+Phase 2 focused on connecting the FastAPI backend with the static HTML/CSS/JS frontend. The goal was to enable a working flow from file upload → AI summary generation → display of results in the browser.
+
+### Implemented Features
+✅ Established full communication between `script.js` and FastAPI endpoints (`/upload` and `/generate/flashcards`).  
+✅ Markdown-to-HTML conversion added to backend for improved readability.  
+✅ Frontend navigation structure implemented (Upload, Results, Settings).  
+✅ Basic accessibility compliance verified (ARIA roles, contrast, focus states).  
+✅ Designed consistent interface based on WCAG and Norwegian government design standards.
+
+### Testing
+- Verified via Swagger UI (`http://127.0.0.1:8000/docs`) and browser UI.  
+- Uploaded PDFs successfully and viewed formatted AI summaries in browser.  
+- Flashcards generation tested and functional.  
+- Quiz placeholder ready for implementation in Phase 3.
+
+### Reflection
+This phase completed the integration layer between backend and frontend, achieving an interactive MVP skeleton.  
+The project is now ready for **Phase 3: full AI functionality and user experience refinement**.

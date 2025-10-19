@@ -1,6 +1,6 @@
+// script.js – AI Study Buddy Frontend Prototype (Phase 2)
 
-
-// script.js – AI Study Buddy Frontend Prototype
+let lastUploadedText = "";
 
 const uploadSection = document.getElementById('upload');
 const resultsSection = document.getElementById('results');
@@ -45,27 +45,80 @@ async function uploadFile() {
     });
 
     if (!response.ok) {
-      throw new Error(`Feil ved opplasting: ${response.statusText}`);
+      const errText = await response.text();
+      throw new Error(`Feil ved opplasting: ${response.statusText}\n${errText}`);
     }
 
     const result = await response.json();
-    console.log("Backend response:", result);
 
     uploadStatus.innerText = "✅ Fil lastet opp og analysert!";
     uploadStatus.style.color = "green";
 
+    // Show results section
     showSection("results");
+    showTab("summary");
 
-    // Placeholder: Display content in results
-    document.getElementById("summary").innerHTML = `
-      <h3>Oppsummering</h3>
-      <p>${result.summary || "Ingen oppsummering generert ennå."}</p>
-    `;
+    // Render HTML summary returned by backend
+    const summaryEl = document.getElementById("summaryContent");
+    summaryEl.innerHTML = result.summary_html || "<p>Ingen oppsummering generert.</p>";
+
+    // Save raw text for flashcard generation
+    lastUploadedText = result.raw_text?.trim() || "";
+
+    if (lastUploadedText.length < 50) {
+      console.warn("⚠️ Filen inneholder svært lite tekst, resultat kan bli begrenset.");
+    }
+
+    // Auto-generate flashcards using the raw text and current settings
+    const count = parseInt(document.getElementById('flashcardCount').value || "5", 10);
+    if (lastUploadedText) {
+      await generateFlashcards(lastUploadedText, count);
+    } else {
+      console.warn("Ingen tekst tilgjengelig for flashcards.");
+    }
 
   } catch (error) {
     console.error("Upload error:", error);
-    uploadStatus.innerText = "❌ Noe gikk galt under opplasting.";
+    uploadStatus.innerText = "❌ Noe gikk galt under opplasting. Kontroller at filen ikke er tom.";
     uploadStatus.style.color = "red";
+  }
+}
+
+async function generateFlashcards(text, num) {
+  const list = document.getElementById("flashcardList");
+  list.innerHTML = "<li>⏳ Genererer flashcards...</li>";
+
+  try {
+    const resp = await fetch("http://127.0.0.1:8000/generate/flashcards/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text.slice(0, 8000), num_flashcards: num }),
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`Feil fra server: ${resp.status} ${resp.statusText}\n${errText}`);
+    }
+
+    const data = await resp.json();
+    list.innerHTML = "";
+
+    if (Array.isArray(data.flashcards)) {
+      data.flashcards.forEach((fc, i) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>Q${i + 1}:</strong> ${fc.question}<br/><strong>A:</strong> ${fc.answer}`;
+        list.appendChild(li);
+      });
+    } else if (data.flashcards_raw) {
+      const li = document.createElement("li");
+      li.textContent = data.flashcards_raw.slice(0, 500);
+      list.appendChild(li);
+    } else {
+      list.innerHTML = "<li>Ingen flashcards generert.</li>";
+    }
+  } catch (err) {
+    console.error("Flashcards error:", err);
+    list.innerHTML = "<li>❌ Kunne ikke generere flashcards. Kontroller at teksten ble analysert riktig.</li>";
   }
 }
 
@@ -78,8 +131,14 @@ function saveSettings() {
   console.log("Settings saved:", {
     summaryLength,
     flashcardCount,
-    language
+    language,
   });
 
   alert("✅ Innstillinger lagret!");
+
+  // Regenerate flashcards with new count if we already have text
+  if (lastUploadedText) {
+    const count = parseInt(document.getElementById('flashcardCount').value || "5", 10);
+    generateFlashcards(lastUploadedText, count);
+  }
 }

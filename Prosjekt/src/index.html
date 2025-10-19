@@ -8,55 +8,61 @@
 </head>
 <body>
   <header>
-    <h1>AI Study Buddy</h1>
+    <h1 tabindex="0">AI Study Buddy</h1>
     <nav>
-      <button onclick="showSection('upload')">Last opp</button>
-      <button onclick="showSection('results')">Resultater</button>
-      <button onclick="showSection('settings')">Innstillinger</button>
+      <button onclick="showSection('upload')" aria-controls="upload">Last opp</button>
+      <button onclick="showSection('results')" aria-controls="results">Resultater</button>
+      <button onclick="showSection('settings')" aria-controls="settings">Innstillinger</button>
     </nav>
   </header>
 
   <main>
     <!-- Upload Section -->
-    <section id="upload" class="card active">
-      <h2>Last opp notater</h2>
+    <section id="upload" class="card active" aria-labelledby="uploadTitle">
+      <h2 id="uploadTitle">Last opp notater</h2>
       <p>Dra og slipp en fil her, eller velg en fra enheten din (PDF eller TXT).</p>
       <input type="file" id="fileInput" accept=".pdf,.txt" aria-label="Velg fil for opplasting" />
       <button id="uploadBtn" onclick="uploadFile()">Generer studiehjelp</button>
-      <div id="uploadStatus"></div>
+      <div id="uploadStatus" role="status" aria-live="polite"></div>
     </section>
 
     <!-- Results Section -->
-    <section id="results" class="card hidden">
-      <h2>Resultater</h2>
-      <div class="tabs">
-        <button onclick="showTab('summary')">Oppsummering</button>
-        <button onclick="showTab('flashcards')">Flashcards</button>
-        <button onclick="showTab('quiz')">Quiz</button>
+    <section id="results" class="card hidden" aria-labelledby="resultsTitle">
+      <h2 id="resultsTitle">Resultater</h2>
+      <div class="tabs" role="tablist" aria-label="Resultatfaner">
+        <button role="tab" id="tab-summary" aria-controls="summary" onclick="showTab('summary')">Oppsummering</button>
+        <button role="tab" id="tab-flashcards" aria-controls="flashcards" onclick="showTab('flashcards')">Flashcards</button>
+        <button role="tab" id="tab-quiz" aria-controls="quiz" onclick="showTab('quiz')">Quiz</button>
       </div>
 
-      <div id="summary" class="tab-content">
+      <div id="summary" class="tab-content" role="tabpanel" aria-labelledby="tab-summary">
         <h3>Oppsummering</h3>
-        <p>Oppsummering generert fra dokumentet vises her.</p>
+        <div id="summaryContent" class="result-box" aria-live="polite">
+          <p>Oppsummering generert fra dokumentet vises her.</p>
+        </div>
       </div>
 
-      <div id="flashcards" class="tab-content hidden">
+      <div id="flashcards" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-flashcards">
         <h3>Flashcards</h3>
-        <ul id="flashcardList">
+        <ul id="flashcardList" class="result-box" aria-live="polite">
           <li>Eksempel: Hva er kunstig intelligens? – Et system som lærer fra data.</li>
         </ul>
       </div>
 
-      <div id="quiz" class="tab-content hidden">
+      <div id="quiz" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-quiz">
         <h3>Quiz</h3>
-        <p>Quiz-spørsmål generert fra teksten vises her.</p>
+        <div id="quizContent" class="result-box" aria-live="polite">
+          <p>Quiz-spørsmål generert fra teksten vises her.</p>
+        </div>
       </div>
     </section>
 
     <!-- Settings Section -->
-    <section id="settings" class="card hidden">
-      <h2>Innstillinger</h2>
-      <form>
+    <section id="settings" class="card hidden" aria-labelledby="settingsTitle">
+      <h2 id="settingsTitle">Innstillinger</h2>
+      <form aria-describedby="settingsDesc">
+        <p id="settingsDesc">Tilpass hvordan AI Study Buddy genererer innholdet ditt.</p>
+
         <label for="summaryLength">Lengde på oppsummering:</label>
         <select id="summaryLength">
           <option value="short">Kort</option>

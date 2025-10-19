@@ -5,42 +5,50 @@ import os
 from dotenv import load_dotenv
 from google import genai
 import markdown
+from pydantic import BaseModel
+from typing import List, Optional
+import json
+import re
+import logging
 
-# Load environment variables
+# === Logging setup ===
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("AI-Study-Buddy")
+
+# === Load environment variables ===
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
-    print("⚠️ Warning: GEMINI_API_KEY is missing or invalid. The app will run, but AI features will not work until a valid key is set.")
+    logger.warning("⚠️ GEMINI_API_KEY is missing. AI features will not work.")
     api_key = None
 
-# Initialize Gemini client
+# === Define data models ===
+class FlashcardRequest(BaseModel):
+    text: str
+    num_flashcards: int = 5
+
+# === Initialize Gemini client ===
 client = genai.Client(api_key=api_key)
 
-# Initialize FastAPI app
+# === Initialize FastAPI app ===
 app = FastAPI(title="AI Study Buddy Backend")
 
-# CORS setup
+# === CORS setup ===
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:8000",
-        "http://localhost:8000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "*",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Root endpoint
+# === Root endpoint ===
 @app.get("/")
 def read_root():
-    return {"message": "AI Study Buddy Backend is running (Gemini 2.5 enabled)"}
+    return {"message": "✅ AI Study Buddy Backend is running (Gemini 2.5 Flash enabled)"}
 
-# Upload and summarize file
+# === Upload and summarize file ===
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     try:
@@ -51,68 +59,85 @@ async def upload_file(file: UploadFile = File(...)):
         text = ""
 
         if file.filename.endswith(".pdf"):
-            with fitz.open(stream=contents, filetype="pdf") as doc:
-                text = "".join([page.get_text() for page in doc])
+            try:
+                with fitz.open(stream=contents, filetype="pdf") as doc:
+                    text = "".join([page.get_text() for page in doc])
+            except Exception as e:
+                logger.error(f"PDF parsing error: {e}")
+                raise HTTPException(status_code=400, detail="Could not read PDF file")
         else:
-            text = contents.decode("utf-8")
+            text = contents.decode("utf-8", errors="ignore")
 
         if not text.strip():
             raise HTTPException(status_code=400, detail="File contains no readable text")
 
         if not api_key:
-            raise HTTPException(status_code=500, detail="AI features are disabled because GEMINI_API_KEY is missing.")
+            raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
 
-        # Generate summary using Gemini 2.5 Flash
-        print("✅ Using Gemini 2.5 Flash model")
+        logger.info("✅ Using Gemini 2.5 Flash model for summary")
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"Summarize this course material for students:\n{text}",
+            contents=f"Summarize this course material for students:\n{text[:30000]}",
         )
 
         summary = getattr(response, "text", None) or "No summary generated."
-        # Convert Markdown to HTML for proper rendering in frontend
         html_output = markdown.markdown(summary)
-        return {"summary": html_output}
+        return {"summary_html": html_output, "raw_text": text}
 
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error in /upload/: {e}")
+        logger.error(f"Error in /upload/: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Generate flashcards
+# === Generate flashcards ===
 @app.post("/generate/flashcards/")
-async def generate_flashcards(file: UploadFile = File(...)):
+async def generate_flashcards(req: FlashcardRequest):
     try:
-        contents = await file.read()
-        text = ""
-
-        if file.filename.endswith(".pdf"):
-            with fitz.open(stream=contents, filetype="pdf") as doc:
-                text = "".join([page.get_text() for page in doc])
-        else:
-            text = contents.decode("utf-8")
-
-        if not text.strip():
-            raise HTTPException(status_code=400, detail="File contains no readable text")
-
+        text = (req.text or "").strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="No text provided or file is empty")
         if not api_key:
-            raise HTTPException(status_code=500, detail="AI features are disabled because GEMINI_API_KEY is missing.")
+            raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
 
-        print("✅ Using Gemini 2.5 Flash model for flashcards")
+        logger.info("✅ Using Gemini 2.5 Flash model for flashcards")
         prompt = (
-            "Create 5 concise flashcards from this text. "
-            "Each flashcard should be in JSON with 'question' and 'answer' keys.\n"
-            f"{text}"
+            f"Create {req.num_flashcards} concise flashcards from the text below. "
+            "Return ONLY valid JSON array of objects with 'question' and 'answer' keys.\n\n"
+            f"TEXT:\n{text[:10000]}"
         )
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-        )
+        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+        raw = getattr(response, "text", "") or ""
 
-        flashcards = getattr(response, "text", None) or "No flashcards generated."
-        return {"flashcards": flashcards}
+        # Attempt to parse JSON safely
+        flashcards: Optional[List[dict]] = None
+        try:
+            flashcards = json.loads(raw)
+        except Exception:
+            match = re.search(r"\[.*\]", raw, re.DOTALL)
+            if match:
+                try:
+                    flashcards = json.loads(match.group(0))
+                except Exception:
+                    flashcards = None
 
+        if not flashcards:
+            logger.warning(f"⚠️ Could not parse JSON. Raw model output: {raw[:300]}")
+            return {"flashcards_raw": raw}
+
+        normalized = [
+            {"question": fc.get("question", "").strip(), "answer": fc.get("answer", "").strip()}
+            for fc in flashcards if fc.get("question") and fc.get("answer")
+        ]
+
+        if not normalized:
+            return {"flashcards_raw": raw}
+
+        return {"flashcards": normalized}
+
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error in /generate/flashcards/: {e}")
+        logger.error(f"Error in /generate/flashcards/: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    

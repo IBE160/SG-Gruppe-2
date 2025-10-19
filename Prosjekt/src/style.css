@@ -1,8 +1,9 @@
 
 
+
 /* ===========================
-   AI Study Buddy – Style Guide
-   Based on Prompt 2 – Style and Accessibility
+   AI Study Buddy – Enhanced Style Guide
+   Based on Prompt 5 & 6 (Dynamic Integration & Accessibility)
    =========================== */
 
 /* Color Palette */
@@ -12,6 +13,8 @@
   --accent: #ff8200;
   --background: #ffffff;
   --text: #222222;
+  --success: #28a745;
+  --error: #c62828;
 }
 
 /* Global Styles */
@@ -22,7 +25,7 @@
 body {
   font-family: 'Inter', Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--text);
   background-color: var(--background);
   margin: 0;
@@ -34,13 +37,38 @@ header {
   background-color: var(--primary);
   color: var(--background);
   text-align: center;
-  padding: 1rem 0;
+  padding: 1.2rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 header h1 {
   font-size: 2rem;
   font-weight: bold;
   margin: 0;
+}
+
+nav {
+  margin-top: 0.5rem;
+}
+
+nav button {
+  margin: 0 0.5rem;
+  background-color: var(--accent);
+  color: var(--background);
+  border: none;
+  border-radius: 5px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+nav button:hover,
+nav button:focus {
+  background-color: #e67600;
+  outline: none;
 }
 
 /* Main layout */
@@ -52,29 +80,141 @@ main {
   gap: 2rem;
 }
 
-/* Cards */
+/* Card Components */
 .card {
   background-color: var(--secondary);
-  border-radius: 8px;
-  padding: 1.5rem;
+  border-radius: 10px;
+  padding: 2rem;
   width: 100%;
-  max-width: 600px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  max-width: 750px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.01);
 }
 
 .card h2 {
   color: var(--primary);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   margin-bottom: 1rem;
 }
 
-/* File Input and Buttons */
+.hidden {
+  display: none;
+}
+
+/* Upload */
 input[type="file"] {
   display: block;
   margin: 1rem auto;
-  padding: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background-color: var(--background);
 }
 
+#uploadBtn {
+  display: block;
+  margin: 1rem auto;
+}
+
+#uploadStatus {
+  margin-top: 1rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.tabs button {
+  background-color: var(--accent);
+  color: var(--background);
+  border: none;
+  border-radius: 5px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+}
+
+.tabs button:hover,
+.tabs button:focus {
+  background-color: #e67600;
+}
+
+/* Tab Content */
+.tab-content {
+  background-color: var(--background);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result-box {
+  margin-top: 1rem;
+  background-color: var(--secondary);
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.result-box p,
+.result-box li {
+  margin: 0.5rem 0;
+}
+
+/* Flashcard List */
+#flashcardList {
+  list-style: none;
+  padding: 0;
+}
+
+#flashcardList li {
+  background: var(--background);
+  border-left: 4px solid var(--accent);
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+}
+
+/* Settings Form */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+input[type="number"],
+select {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--primary);
+}
+
+.settings-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+/* Buttons */
 button {
   background-color: var(--accent);
   color: var(--background);
@@ -92,12 +232,6 @@ button:focus {
   outline: none;
 }
 
-#uploadStatus {
-  margin-top: 1rem;
-  font-weight: bold;
-  text-align: center;
-}
-
 /* Footer */
 footer {
   text-align: center;
@@ -105,12 +239,14 @@ footer {
   background-color: var(--secondary);
   color: var(--text);
   font-size: 0.9rem;
+  border-top: 1px solid var(--primary);
 }
 
 /* Accessibility & Responsiveness */
 a,
 button,
-input {
+input,
+select {
   outline-color: var(--accent);
 }
 
@@ -125,5 +261,10 @@ input {
 
   header h1 {
     font-size: 1.6rem;
+  }
+
+  .tabs {
+    flex-direction: column;
+    align-items: center;
   }
 }
