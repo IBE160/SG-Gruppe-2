@@ -94,3 +94,23 @@ Identify potential risks (e.g., time shortage, API errors, data privacy) and pro
   - Mitigation: Avoid storing sensitive data, use environment variables for API keys, and recommend HTTPS for deployment.
 - **Team Communication Issues:**  
   - Mitigation: Schedule regular meetings, use shared documentation, and clarify responsibilities early.
+
+
+### Prompt 7 – Sprint 4–5 Update (Frontend Milestone)
+**Prompt:**  
+Update the sprint plan to reflect current development progress (frontend integration and UI completion). Define coordination between Designer and Developer roles for Phase 2.
+
+**Updated Sprint Tasks:**
+- **Week 4:**  
+  - Implement frontend connection to backend (Developer).  
+  - Finalize UI layout for Results and Settings (Designer).  
+  - Begin functional testing (Tester).  
+- **Week 5:**  
+  - Conduct integration testing across modules.  
+  - Fix visual and functional bugs.  
+  - Prepare documentation and record test results.
+
+**Deliverables:**
+- Updated sprint plan with progress notes.  
+- Coordination record between roles.  
+- Project milestone marking completion of frontend prototype.

@@ -57,3 +57,28 @@ Define validation metrics for the project. What does success look like?
 - At least 90% of automated tests pass.
 - User feedback indicates improved study efficiency and satisfaction.
 - Accessibility criteria (WCAG AA) are met.
+
+
+### Prompt 4 – Frontend Functional Testing
+**Prompt:**  
+Create a comprehensive test plan for verifying frontend-backend integration in AI Study Buddy. Focus on upload, result rendering, and error handling.
+
+**Test Areas:**
+1. **Upload Functionality:**  
+   - Valid file types (PDF, TXT).  
+   - Invalid file handling and error display.  
+2. **Result Display:**  
+   - Verify Markdown-rendered summaries display correctly.  
+   - Confirm tabs switch between Summary, Flashcards, and Quiz.  
+3. **Settings Persistence:**  
+   - Ensure settings changes reflect in subsequent uploads.  
+4. **Error Handling:**  
+   - Simulate network errors and ensure user feedback appears.  
+   - Verify retry and reset flows.
+
+**Automated Testing (Optional):**  
+Use Playwright or Selenium to simulate user flows and validate DOM rendering.
+
+**Deliverables:**
+- Documented test cases and expected results in `docs/dev_log.md`.  
+- Updated tester report confirming integration stability.

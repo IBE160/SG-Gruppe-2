@@ -88,3 +88,23 @@ Design the first HTML/CSS/JS prototype for the AI Study Buddy frontend. Use the 
   - Logs response to console for now (future integration: display flashcards and summaries).
 - **Next Step:**  
   - Expand the UI with React components for a more dynamic experience once prototype testing is completed.
+
+### Prompt 6 – Designer Support (Frontend Phase 2)
+**Prompt:**  
+Refine and extend the UI for AI Study Buddy to include **Results** and **Settings** screens.  
+Ensure visual consistency, accessibility, and clarity across all sections (Upload, Results, Settings).
+
+**Requirements:**
+- Follow the established color palette and typography.  
+- Provide layout descriptions for each screen:
+  - **Results:** Tabs for Summary, Flashcards, Quiz.  
+  - **Settings:** Form elements for summary length, flashcard count, and language.  
+- Ensure:
+  - High color contrast (meets WCAG AA).  
+  - Clear focus states for keyboard navigation.  
+  - Responsive layout for mobile and desktop.
+
+**Deliverables:**
+- Updated visual layout guidelines (in `docs/style_guide.md`).  
+- Accessibility notes.  
+- Optional wireframes or mockups for frontend reference.
