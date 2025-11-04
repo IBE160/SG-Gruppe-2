@@ -93,3 +93,48 @@ The project is now ready for **Phase 3: full AI functionality and user experienc
 ✅ Quiz questions and answers display correctly in the web UI.  
 ✅ End-to-end functionality verified from upload → summary → flashcards → quiz.  
 ✅ Phase 3 milestone successfully achieved.
+
+
+ Developer Response – Implementation Summary
+
+During implementation of the multilingual architecture, several adjustments were required to ensure that the backend and frontend communicated language and length preferences consistently across all AI-driven features.
+
+1. Synchronizing Backend and Frontend
+
+The first challenge was that user settings (language, summary length, flashcard count) were not being passed correctly to the backend.
+This was resolved by:
+	•	Adding query parameters (language and summary_length) to the /upload/ endpoint.
+	•	Persisting user settings in localStorage and reloading them automatically when the app starts.
+	•	Ensuring all fetch() requests in the frontend dynamically include the current language and configuration.
+
+2. Adaptive Summaries
+
+Previously, summaries had a fixed format.
+We extended the backend prompt with conditional logic that adapts Gemini’s instructions based on the user’s chosen summary length:
+	•	Short → brief summary with 2–4 bullet points.
+	•	Medium → balanced academic overview (default).
+	•	Long → detailed, structured summary with subheadings.
+
+This produced much more consistent and user-controlled output.
+
+3. Language Enforcement
+
+Even when the user selected Norwegian, Gemini sometimes defaulted to English.
+We mitigated this by explicitly adding “Respond in Norwegian” or “Respond in English” to every AI prompt in the /upload/, /generate/flashcards/, and /generate/quiz/ endpoints.
+This directive, combined with structured JSON formatting, improved accuracy and output stability.
+
+4. Persistent Settings and UX Improvements
+
+Frontend logic was improved to:
+	•	Save all preferences (language, summary length, flashcard count) automatically when “Save Settings” is pressed.
+	•	Re-generate flashcards and quiz immediately using updated settings.
+	•	Restore user preferences across sessions for a seamless experience.
+
+5. Result
+
+✅ Full synchronization between frontend settings and backend prompt generation.
+✅ Dynamic control over output length and language.
+✅ Gemini consistently returns structured, localized responses for summaries, flashcards, and quizzes.
+✅ Users can now switch between English and Norwegian without reloading or losing preferences.
+
+

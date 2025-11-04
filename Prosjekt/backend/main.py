@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import fitz  # PyMuPDF
 import os
@@ -50,7 +50,11 @@ def read_root():
 
 # === Upload and summarize file ===
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(
+    file: UploadFile = File(...),
+    language: Optional[str] = Query("no"),
+    summary_length: Optional[str] = Query("short"),
+):
     try:
         if not (file.filename.endswith(".pdf") or file.filename.endswith(".txt")):
             raise HTTPException(status_code=400, detail="Only PDF and text files are supported")
@@ -74,10 +78,38 @@ async def upload_file(file: UploadFile = File(...)):
         if not api_key:
             raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
 
+        lang_instruction = "Respond in Norwegian." if language == "no" else "Respond in English."
+
+        if summary_length == "short":
+            prompt_text = (
+                f"{lang_instruction}\n"
+                "Summarize this course material briefly for students:\n"
+                f"{text[:15000]}"
+            )
+        elif summary_length == "medium":
+            prompt_text = (
+                f"{lang_instruction}\n"
+                "Provide a detailed summary of this course material for students:\n"
+                f"{text[:25000]}"
+            )
+        elif summary_length == "long":
+            prompt_text = (
+                f"{lang_instruction}\n"
+                "Provide an in-depth summary of this course material for students:\n"
+                f"{text[:30000]}"
+            )
+        else:
+            # Default fallback
+            prompt_text = (
+                f"{lang_instruction}\n"
+                "Summarize this course material for students:\n"
+                f"{text[:30000]}"
+            )
+
         logger.info("✅ Using Gemini 2.5 Flash model for summary")
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"Summarize this course material for students:\n{text[:30000]}",
+            contents=prompt_text,
         )
 
         summary = getattr(response, "text", None) or "No summary generated."
@@ -92,7 +124,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 # === Generate flashcards ===
 @app.post("/generate/flashcards/")
-async def generate_flashcards(req: FlashcardRequest):
+async def generate_flashcards(req: FlashcardRequest, language: Optional[str] = Query("no")):
     try:
         text = (req.text or "").strip()
         if not text:
@@ -100,8 +132,11 @@ async def generate_flashcards(req: FlashcardRequest):
         if not api_key:
             raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
 
+        lang_instruction = "Respond in Norwegian." if language == "no" else "Respond in English."
+
         logger.info("✅ Using Gemini 2.5 Flash model for flashcards")
         prompt = (
+            f"{lang_instruction}\n"
             f"Create {req.num_flashcards} concise flashcards from the text below. "
             "Return ONLY valid JSON array of objects with 'question' and 'answer' keys.\n\n"
             f"TEXT:\n{text[:10000]}"
@@ -143,7 +178,7 @@ async def generate_flashcards(req: FlashcardRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate/quiz/")
-async def generate_quiz(req: FlashcardRequest):
+async def generate_quiz(req: FlashcardRequest, language: Optional[str] = Query("no")):
     try:
         text = (req.text or "").strip()
         if not text:
@@ -151,9 +186,12 @@ async def generate_quiz(req: FlashcardRequest):
         if not api_key:
             raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
 
+        lang_instruction = "Respond in Norwegian." if language == "no" else "Respond in English."
+
         logger.info("✅ Using Gemini 2.5 Flash model for quiz generation")
 
         prompt = (
+            f"{lang_instruction}\n"
             "Generate 5 multiple-choice quiz questions from the text below. "
             "Each question must have exactly four options labeled A, B, C, D, and specify the correct letter. "
             "Return ONLY valid JSON in this format:\n"

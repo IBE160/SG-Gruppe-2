@@ -1,6 +1,9 @@
 // script.js – AI Study Buddy Frontend Prototype (Phase 2)
 
 let lastUploadedText = "";
+let currentLanguage = localStorage.getItem('language') || 'no';
+let currentSummaryLength = localStorage.getItem('summaryLength') || 'medium';
+let currentFlashcardCount = parseInt(localStorage.getItem('flashcardCount') || "5", 10);
 
 const uploadSection = document.getElementById('upload');
 const resultsSection = document.getElementById('results');
@@ -35,11 +38,14 @@ async function uploadFile() {
   const formData = new FormData();
   formData.append("file", file);
 
+  const summaryLength = document.getElementById('summaryLength').value || currentSummaryLength;
+  const flashcardCount = parseInt(document.getElementById('flashcardCount').value || currentFlashcardCount, 10);
+
   uploadStatus.innerText = "⏳ Laster opp...";
   uploadStatus.style.color = "#003366";
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/upload/", {
+    const response = await fetch(`http://127.0.0.1:8000/upload/?language=${currentLanguage}&summary_length=${summaryLength}&flashcard_count=${flashcardCount}`, {
       method: "POST",
       body: formData,
     });
@@ -70,9 +76,9 @@ async function uploadFile() {
     }
 
     // Auto-generate flashcards using the raw text and current settings
-    const count = parseInt(document.getElementById('flashcardCount').value || "5", 10);
     if (lastUploadedText) {
-      await generateFlashcards(lastUploadedText, count);
+      await generateFlashcards(lastUploadedText, flashcardCount);
+      await generateQuiz(lastUploadedText);
     } else {
       console.warn("Ingen tekst tilgjengelig for flashcards.");
     }
@@ -89,7 +95,7 @@ async function generateFlashcards(text, num) {
   list.innerHTML = "<li>⏳ Genererer flashcards...</li>";
 
   try {
-    const resp = await fetch("http://127.0.0.1:8000/generate/flashcards/", {
+    const resp = await fetch(`http://127.0.0.1:8000/generate/flashcards/?language=${currentLanguage}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: text.slice(0, 8000), num_flashcards: num }),
@@ -127,7 +133,7 @@ async function generateQuiz(text) {
   quizDiv.innerHTML = "<p>⏳ Genererer quiz...</p>";
 
   try {
-    const resp = await fetch("http://127.0.0.1:8000/generate/quiz/", {
+    const resp = await fetch(`http://127.0.0.1:8000/generate/quiz/?language=${currentLanguage}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: text.slice(0, 8000) }),
@@ -166,6 +172,14 @@ function saveSettings() {
   const flashcardCount = document.getElementById('flashcardCount').value;
   const language = document.getElementById('language').value;
 
+  localStorage.setItem('language', language);
+  localStorage.setItem('summaryLength', summaryLength);
+  localStorage.setItem('flashcardCount', flashcardCount);
+
+  currentLanguage = language;
+  currentSummaryLength = summaryLength;
+  currentFlashcardCount = parseInt(flashcardCount, 10);
+
   console.log("Settings saved:", {
     summaryLength,
     flashcardCount,
@@ -174,9 +188,9 @@ function saveSettings() {
 
   alert("✅ Innstillinger lagret!");
 
-  // Regenerate flashcards with new count if we already have text
+  // Regenerate flashcards and quiz with new settings if we already have text
   if (lastUploadedText) {
-    const count = parseInt(document.getElementById('flashcardCount').value || "5", 10);
-    generateFlashcards(lastUploadedText, count);
+    generateFlashcards(lastUploadedText, currentFlashcardCount);
+    generateQuiz(lastUploadedText);
   }
 }

@@ -169,7 +169,7 @@ This phase establishes the full interaction loop between frontend and backend, e
 
 ---
 
-### Prompt 6 – Quiz Generator (Final Integration)
+### Prompt 6 – Quiz Generator 
 **Prompt:**  
 Develop a robust quiz generation system that ensures Gemini 2.5 Flash produces valid, structured JSON output compatible with the frontend. The model should generate five multiple-choice questions (A–D) with one correct answer, returned in a consistent JSON format. Include detailed instructions to Gemini so it reliably returns the expected structure. Implement backend parsing logic that cleans the model response, validates the JSON, and maps the correct letter (A–D) to the corresponding answer text.  
 
@@ -205,7 +205,7 @@ Develop a robust quiz generation system that ensures Gemini 2.5 Flash produces v
 This prompt enforces predictable, machine-readable structure for quiz generation. The backend logic ensures robust parsing even when Gemini adds Markdown or explanations. The frontend can now reliably display questions and correct answers without “undefined” errors, completing the quiz functionality for the AI Study Buddy project.
 
 ---
-# Developer Role – AI Study Buddy (Multilingual Architecture)
+# Prompt 7 – AI Study Buddy (Multilingual Architecture)
 
 ## Vision
 Develop a fully modular, multilingual AI-powered study assistant.  
@@ -317,7 +317,7 @@ Guidelines:
 - Avoid meta explanations or introductory text.
 ```
 
----
+
 
 ## Dynamic Language Implementation
 - `main.py` backend injects `{{language}}` dynamically from `/settings`.
@@ -329,7 +329,7 @@ Guidelines:
 - Default fallback: English.
 
 ---
-
+**AI Response:**  
 ## Technical Notes
 - Added multilingual Markdown → HTML conversion in backend.
 - Implemented strict JSON validation for AI output parsing.
@@ -346,9 +346,24 @@ Guidelines:
 
 ---
 
-## Next Steps
-- Expand localization with additional European languages (Phase 3.3).
-- Add speech synthesis (TTS) for flashcards in selected language.
-- Integrate user accounts and preference persistence (Supabase).
 
----
+#
+### Prompt 8 – Adaptive Summary Length & Multilingual Settings
+**Prompt:**  
+Enhance the AI Study Buddy backend and frontend to fully support user-controlled settings for summary length (Short, Medium, Long) and language (Norwegian, English). Ensure that these preferences are stored persistently, sent correctly to the backend, and dynamically modify the Gemini prompt behavior.  
+
+**AI Response:**  
+- Updated backend (`main.py`) to accept `language` and `summary_length` as parameters for the `/upload/` endpoint.  
+- Injected both values dynamically into Gemini prompt templates for summary, flashcards, and quiz generation.  
+- Added adaptive logic in the prompt:
+  - *Short* → 2–4 bullet points  
+  - *Medium* → moderate academic summary  
+  - *Long* → detailed, structured explanation  
+- Frontend (`script.js`) now stores user preferences in `localStorage` and includes them in every API call.  
+- The “Settings” tab allows users to toggle language and select summary length with immediate effect.  
+- Confirmed that summaries adapt correctly and match user-selected verbosity level and language.  
+
+**Reflection:**  
+This update resolved earlier issues where summaries defaulted to English and ignored length settings.  
+The backend now consistently applies localized prompts, and the frontend ensures real-time synchronization of preferences across all modules.  
+Gemini outputs are fully aligned with the selected language and desired summary depth.

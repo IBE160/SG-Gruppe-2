@@ -93,5 +93,11 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+    // Set language, summaryLength, and flashcardCount dropdown/input values on page load from localStorage
+    document.getElementById('language').value = localStorage.getItem('language') || 'no';
+    document.getElementById('summaryLength').value = localStorage.getItem('summaryLength') || 'medium';
+    document.getElementById('flashcardCount').value = localStorage.getItem('flashcardCount') || 10;
+  </script>
 </body>
 </html>
