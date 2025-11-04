@@ -166,3 +166,189 @@ Implement navigation between Upload, Results, and Settings sections. Ensure data
 
 **Reflection:**  
 This phase establishes the full interaction loop between frontend and backend, ensuring the prototype works end-to-end for student users.
+
+---
+
+### Prompt 6 – Quiz Generator (Final Integration)
+**Prompt:**  
+Develop a robust quiz generation system that ensures Gemini 2.5 Flash produces valid, structured JSON output compatible with the frontend. The model should generate five multiple-choice questions (A–D) with one correct answer, returned in a consistent JSON format. Include detailed instructions to Gemini so it reliably returns the expected structure. Implement backend parsing logic that cleans the model response, validates the JSON, and maps the correct letter (A–D) to the corresponding answer text.  
+
+**AI Response:**  
+- Implement a clear prompt sent to Gemini 2.5 Flash that enforces strict JSON formatting:  
+  ```json
+  {
+    "quiz": [
+      {
+        "question": "Question text",
+        "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+        "answer": "B"
+      }
+    ]
+  }
+  ```
+- In the FastAPI backend, strip any Markdown code fences (```json ... ```), use regex to extract valid JSON, and parse it safely with `json.loads()`.  
+- For each question, match the `"answer"` key (A–D) to the actual option text, then output an array of quiz objects with `question`, `options`, and `correct`.  
+- Example final response sent to the frontend:
+  ```json
+  {
+    "quiz": [
+      {
+        "question": "What is the main purpose of AI Study Buddy?",
+        "options": ["A. Analyze data", "B. Generate study content", "C. Build websites", "D. Translate languages"],
+        "correct": "B. Generate study content"
+      }
+    ]
+  }
+  ```
+
+**Reflection:**  
+This prompt enforces predictable, machine-readable structure for quiz generation. The backend logic ensures robust parsing even when Gemini adds Markdown or explanations. The frontend can now reliably display questions and correct answers without “undefined” errors, completing the quiz functionality for the AI Study Buddy project.
+
+---
+# Developer Role – AI Study Buddy (Multilingual Architecture)
+
+## Vision
+Develop a fully modular, multilingual AI-powered study assistant.  
+The system must dynamically adapt to user language preferences (Norwegian or English) for **Summaries**, **Flashcards**, and **Quizzes** — ensuring seamless interaction across backend and frontend.
+
+---
+
+## Core Components
+- **Backend:** FastAPI (Python 3.9+)  
+- **AI Integration:** Gemini 2.5 Flash / 1.5 Pro (via `google-genai`)  
+- **File Handling:** PyMuPDF for PDF parsing  
+- **Frontend:** HTML/JS prototype with Tailwind CSS (React-ready structure)  
+- **Localization:** Dynamic prompt injection and output translation  
+- **Data Flow:** File upload → Text extraction → AI processing → Result rendering
+
+---
+
+## Backend Responsibilities
+1. Set up FastAPI endpoints for:
+   - `/upload` → PDF upload and text extraction  
+   - `/generate/summary` → Summarization  
+   - `/generate/flashcards` → Flashcard generation  
+   - `/generate/quiz` → Quiz creation  
+2. Integrate environment variables (`.env`) for Gemini API keys and project configs.  
+3. Implement prompt templates that adjust language dynamically via a `settings` object.  
+4. Sanitize Gemini responses: remove Markdown fences, ensure valid JSON.  
+5. Serve structured responses for frontend rendering.
+
+---
+
+## Frontend Responsibilities
+1. Build a clean, minimal interface with:
+   - Tabs: **Upload**, **Results**, **Settings**
+   - Language toggle: 🇳🇴 Norsk / 🇬🇧 English  
+   - Dynamic rendering of summaries, flashcards, and quizzes.  
+2. Use `fetch()` API to POST data to backend endpoints.
+3. Store language preference and re-render all components accordingly.
+4. Ensure accessibility and responsive design.
+
+---
+
+## Multilingual Prompt Design
+
+### 🧠 Summary Prompt
+```
+You are an academic summarization assistant for the AI Study Buddy platform.
+
+Summarize the following study text clearly and educationally.  
+Respond in {{language}} (Norwegian or English).
+
+Guidelines:
+- Adapt summary length to user preference: {{summaryLength}} (Short, Medium, Long).
+- Maintain academic, neutral tone.
+- Use Markdown formatting (headings, bullet points).
+- Avoid unnecessary repetition.
+- Return only the formatted summary text.
+
+Output only the summary — no explanations or commentary.
+```
+
+---
+
+### 🧩 Flashcard Prompt
+```
+You are a flashcard generator for the AI Study Buddy platform.
+
+Generate exactly {{flashcardCount}} concise flashcards from the provided study text.  
+Respond in {{language}} (Norwegian or English).
+
+Each flashcard must follow this JSON structure:
+{
+  "flashcards": [
+    {
+      "front": "Question or concept prompt",
+      "back": "Clear, correct explanation or answer"
+    }
+  ]
+}
+
+Guidelines:
+- Use simple, educational phrasing.
+- Avoid repetition or trivial facts.
+- Output only valid JSON.
+```
+
+---
+
+### 🧮 Quiz Prompt
+```
+You are an intelligent quiz generator for the AI Study Buddy platform.
+
+Given the study text, create a multiple-choice quiz in {{language}}.  
+Return only valid JSON — nothing else.
+
+Expected structure:
+{
+  "quiz": [
+    {
+      "question": "string",
+      "options": ["A", "B", "C", "D"],
+      "answer": "string"
+    }
+  ]
+}
+
+Guidelines:
+- Each question has four options and one correct answer.
+- Use factual, unambiguous phrasing.
+- Avoid meta explanations or introductory text.
+```
+
+---
+
+## Dynamic Language Implementation
+- `main.py` backend injects `{{language}}` dynamically from `/settings`.
+- Frontend `settings.js` stores and retrieves selected language from localStorage.
+- All API calls include language preference in payload:
+  ```json
+  { "text": "...", "language": "Norwegian" }
+  ```
+- Default fallback: English.
+
+---
+
+## Technical Notes
+- Added multilingual Markdown → HTML conversion in backend.
+- Implemented strict JSON validation for AI output parsing.
+- Introduced unified prompt templates for all AI tasks.
+- Linked `settings` page to update prompt language across all components.
+
+---
+
+## Outcome
+✅ Gemini dynamically generates summaries, flashcards, and quizzes in either Norwegian or English.  
+✅ Frontend updates content in real-time when switching language.  
+✅ Backend ensures valid JSON structure and localized responses.  
+✅ AI Study Buddy achieves **full multilingual functionality** across all learning modules.
+
+---
+
+## Next Steps
+- Expand localization with additional European languages (Phase 3.3).
+- Add speech synthesis (TTS) for flashcards in selected language.
+- Integrate user accounts and preference persistence (Supabase).
+
+---

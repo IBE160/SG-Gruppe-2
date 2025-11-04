@@ -122,6 +122,44 @@ async function generateFlashcards(text, num) {
   }
 }
 
+async function generateQuiz(text) {
+  const quizDiv = document.getElementById("quizContent");
+  quizDiv.innerHTML = "<p>⏳ Genererer quiz...</p>";
+
+  try {
+    const resp = await fetch("http://127.0.0.1:8000/generate/quiz/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: text.slice(0, 8000) }),
+    });
+
+    if (!resp.ok) throw new Error(`Feil: ${resp.statusText}`);
+    const data = await resp.json();
+
+    quizDiv.innerHTML = "";
+    if (Array.isArray(data.quiz)) {
+      data.quiz.forEach((q, i) => {
+        const block = document.createElement("div");
+        block.classList.add("quiz-item");
+        block.innerHTML = `
+          <p><strong>Q${i + 1}:</strong> ${q.question}</p>
+          <ul>${q.options.map(opt => `<li>${opt}</li>`).join("")}</ul>
+          <p><em>✅ Riktig svar:</em> ${q.correct}</p>
+          <hr/>
+        `;
+        quizDiv.appendChild(block);
+      });
+    } else if (data.quiz_raw) {
+      quizDiv.innerHTML = `<pre>${data.quiz_raw.slice(0, 500)}</pre>`;
+    } else {
+      quizDiv.innerHTML = "<p>Ingen quiz generert.</p>";
+    }
+  } catch (err) {
+    console.error("Quiz error:", err);
+    quizDiv.innerHTML = "<p>❌ Kunne ikke generere quiz.</p>";
+  }
+}
+
 // Save settings (future feature)
 function saveSettings() {
   const summaryLength = document.getElementById('summaryLength').value;

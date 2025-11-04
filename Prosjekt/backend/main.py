@@ -141,3 +141,59 @@ async def generate_flashcards(req: FlashcardRequest):
     except Exception as e:
         logger.error(f"Error in /generate/flashcards/: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate/quiz/")
+async def generate_quiz(req: FlashcardRequest):
+    try:
+        text = (req.text or "").strip()
+        if not text:
+            raise HTTPException(status_code=400, detail="No text provided.")
+        if not api_key:
+            raise HTTPException(status_code=500, detail="GEMINI_API_KEY missing")
+
+        logger.info("✅ Using Gemini 2.5 Flash model for quiz generation")
+
+        prompt = (
+            "Generate 5 multiple-choice quiz questions from the text below. "
+            "Each question must have exactly four options labeled A, B, C, D, and specify the correct letter. "
+            "Return ONLY valid JSON in this format:\n"
+            "{\n"
+            "  \"quiz\": [\n"
+            "    {\"question\": \"...\", \"options\": [\"A. ...\", \"B. ...\", \"C. ...\", \"D. ...\"], \"answer\": \"B\"}\n"
+            "  ]\n"
+            "}\n\n"
+            f"TEXT:\n{text[:8000]}"
+        )
+
+        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+        raw = getattr(response, "text", "") or ""
+        cleaned = re.sub(r"```(json|JSON)?", "", raw).strip().strip("`")
+
+        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        quiz_json = match.group(0) if match else cleaned
+
+        quiz_data = None
+        try:
+            quiz_data = json.loads(quiz_json)
+        except Exception as e:
+            logger.warning(f"⚠️ Could not parse quiz JSON: {e}")
+            logger.warning(f"Raw output: {raw[:500]}")
+            return {"quiz_raw": raw}
+
+        final_quiz = []
+        for q in quiz_data.get("quiz", []):
+            correct_letter = q.get("answer", "").strip()
+            correct_option = next((opt for opt in q.get("options", []) if opt.strip().startswith(correct_letter)), "")
+            final_quiz.append({
+                "question": q.get("question", "").strip(),
+                "options": q.get("options", []),
+                "correct": correct_option
+            })
+
+        return {"quiz": final_quiz or []}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in /generate/quiz/: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

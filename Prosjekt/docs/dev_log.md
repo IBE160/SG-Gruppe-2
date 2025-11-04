@@ -71,3 +71,25 @@ Phase 2 focused on connecting the FastAPI backend with the static HTML/CSS/JS fr
 ### Reflection
 This phase completed the integration layer between backend and frontend, achieving an interactive MVP skeleton.  
 The project is now ready for **Phase 3: full AI functionality and user experience refinement**.
+
+
+---
+
+## 2025-11-04 — Phase 3: Quiz Functionality Implementation
+
+**Implemented:**
+- Added `/generate/quiz/` endpoint in `main.py` with Gemini 2.5 Flash.
+- Created a structured JSON prompt ensuring valid, predictable output from Gemini.
+- Integrated robust response parsing with automatic JSON cleaning and validation.
+- Updated `script.js` to display quiz questions, answer options, and highlight correct answers.
+- Added “Generer Quiz” button in `index.html` linked to backend endpoint.
+
+**Reason:**
+- The quiz generation previously returned inconsistent or empty data due to unstructured Gemini responses.
+- This update ensures stable and accurate parsing, allowing for real-time quiz creation from uploaded study materials.
+
+**Outcome:**
+✅ Gemini 2.5 Flash now generates quizzes reliably.  
+✅ Quiz questions and answers display correctly in the web UI.  
+✅ End-to-end functionality verified from upload → summary → flashcards → quiz.  
+✅ Phase 3 milestone successfully achieved.
