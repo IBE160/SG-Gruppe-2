@@ -10,6 +10,8 @@ from typing import List, Optional
 import json
 import re
 import logging
+from supabase import create_client
+
 
 # === Logging setup ===
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +24,10 @@ api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     logger.warning("⚠️ GEMINI_API_KEY is missing. AI features will not work.")
     api_key = None
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 # === Define data models ===
 class FlashcardRequest(BaseModel):
@@ -114,6 +120,16 @@ async def upload_file(
 
         summary = getattr(response, "text", None) or "No summary generated."
         html_output = markdown.markdown(summary)
+        if supabase:
+            try:
+                supabase.table("results").insert({
+                    "user_id": "guest",
+                    "summary": html_output,
+                    "flashcards": None,
+                    "quiz": None
+                }).execute()
+            except Exception as e:
+                logger.error(f"Supabase save error: {e}")
         return {"summary_html": html_output, "raw_text": text}
 
     except HTTPException:
@@ -165,6 +181,16 @@ async def generate_flashcards(req: FlashcardRequest, language: Optional[str] = Q
             {"question": fc.get("question", "").strip(), "answer": fc.get("answer", "").strip()}
             for fc in flashcards if fc.get("question") and fc.get("answer")
         ]
+        if supabase:
+            try:
+                supabase.table("results").insert({
+                    "user_id": "guest",
+                    "summary": None,
+                    "flashcards": normalized,
+                    "quiz": None
+                }).execute()
+            except Exception as e:
+                logger.error(f"Supabase save error: {e}")
 
         if not normalized:
             return {"flashcards_raw": raw}
@@ -227,6 +253,16 @@ async def generate_quiz(req: FlashcardRequest, language: Optional[str] = Query("
                 "options": q.get("options", []),
                 "correct": correct_option
             })
+        if supabase:
+            try:
+                supabase.table("results").insert({
+                    "user_id": "guest",
+                    "summary": None,
+                    "flashcards": None,
+                    "quiz": final_quiz
+                }).execute()
+            except Exception as e:
+                logger.error(f"Supabase save error: {e}")
 
         return {"quiz": final_quiz or []}
 

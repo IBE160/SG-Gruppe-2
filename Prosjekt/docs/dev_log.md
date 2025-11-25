@@ -138,3 +138,42 @@ Frontend logic was improved to:
 ✅ Users can now switch between English and Norwegian without reloading or losing preferences.
 
 
+## 2025-11-26 — Minimal Supabase Integration (Results Storage)
+
+**Implemented:**
+- Added a minimal Supabase integration to store summaries, flashcards, and quiz data.
+- Created a `results` table in Supabase using the following SQL:
+  ```
+  create table results (
+    id uuid primary key default gen_random_uuid(),
+    user_id text,
+    summary text,
+    flashcards jsonb,
+    quiz jsonb,
+    created_at timestamptz default now()
+  );
+  ```
+- Added `SUPABASE_URL` and `SUPABASE_KEY` to the backend `.env` file.
+- Initialized Supabase client in `main.py` using:
+  ```
+  from supabase import create_client
+  import os
+  supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+  ```
+- Updated backend endpoints to insert generated results:
+  ```
+  supabase.table("results").insert({
+      "user_id": "guest",
+      "summary": summary_html,
+      "flashcards": flashcards,
+      "quiz": quiz
+  }).execute()
+  ```
+- Frontend workflow remains unchanged, and results are now saved automatically after each generation step.
+
+**Reason:**
+- Needed a simple cloud storage solution for project demonstration without setting opp full auth system.
+
+**Outcome:**
+- All summaries, flashcards, and quiz results are now stored successfully in Supabase.
+- Verified by accessing the Supabase table after uploads.  

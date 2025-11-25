@@ -45,7 +45,7 @@ helping them study smarter and save valuable time.
 |------------|-------------|--------------|
 | Frontend | React + Tailwind CSS | User interface for file upload and displaying generated content |
 | Backend | Python + FastAPI | Handles requests, communicates with AI, and returns formatted data |
-| AI Model | Gemini 1.5 Pro (Google AI) | Generates summaries, flashcards, and quizzes |
+| AI Model | Gemini 2.5 Pro (Google AI) | Generates summaries, flashcards, and quizzes |
 | PDF Parser | PyMuPDF | Extracts text content from uploaded PDF files |
 | Database (optional) | Supabase (PostgreSQL) | Stores user profiles and generated results if login is implemented |
 | Security | .env file | Stores API keys securely |

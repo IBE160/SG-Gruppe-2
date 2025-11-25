@@ -16,7 +16,6 @@ Build a robust, modular application using FastAPI for the backend, integrating G
 - Integrated AI functionality using Gemini API.
 - Example scripts and test cases.
 
----
 
 ## Prompts and AI Responses
 
@@ -367,3 +366,39 @@ Enhance the AI Study Buddy backend and frontend to fully support user-controlled
 This update resolved earlier issues where summaries defaulted to English and ignored length settings.  
 The backend now consistently applies localized prompts, and the frontend ensures real-time synchronization of preferences across all modules.  
 Gemini outputs are fully aligned with the selected language and desired summary depth.
+
+### Prompt 9 – Minimal Supabase Integration
+**Prompt:**  
+Create a minimal Supabase integration for the AI Study Buddy backend. The solution must allow storing summaries, flashcards, and quizzes in a simple `results` table with minimal configuration and without authentication. Describe the steps for setup, required environment variables, backend code needed, and how the frontend triggers the save request.
+
+**AI Response:**  
+- Create a table in Supabase using the SQL Editor:  
+  ```sql
+  create table results (
+    id uuid primary key default gen_random_uuid(),
+    user_id text,
+    summary text,
+    flashcards jsonb,
+    quiz jsonb,
+    created_at timestamptz default now()
+  );
+  ```
+- Add `SUPABASE_URL` and `SUPABASE_KEY` to `.env`.
+- Initialize the client in `main.py`:  
+  ```python
+  from supabase import create_client
+  import os
+  supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+  ```
+- Insert results after AI generation:
+  ```python
+  supabase.table("results").insert({
+      "user_id": "guest",
+      "summary": summary_html,
+      "flashcards": flashcards,
+      "quiz": quiz
+  }).execute()
+  ```
+- The frontend uploads normally, and no extra configuration is needed.
+
+---
